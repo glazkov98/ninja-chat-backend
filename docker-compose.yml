@@ -1,0 +1,81 @@
+version: '3.3'
+
+services:
+    postgres-ninja:
+        container_name: postgres-ninja
+        image: postgis/postgis:13-3.1
+        hostname: postgres.dev
+        restart: always
+        networks:
+            - ninja
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-ninja_chat}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345678}
+            POSTGRES_DB: ${POSTGRES_DB:-ninja_chat}
+        ports:
+            - 5432:5432
+        volumes:
+            - /var/lib/docker/volumes/postgres-ninja/_data/postgres-data:/var/lib/postgresql/data
+
+    rabbit-mq-ninja:
+        image: rabbitmq:3.8.3-management
+        container_name: rabbit-mq-ninja
+        hostname: rabbit-mq-ninja.dev
+        restart: always
+        networks:
+            - ninja
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-radmin}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-123456}
+            RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST:-/}
+            RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-SWQOKODSQACRPCLNMEQG}
+            RABBITMQ_LOG_BASE : /var/log/rabbitmq
+            RABBITMQ_MNESIA_BASE: /var/lib/rabbitmq
+            RABBITMQ_SCHEMA_DIR: /var/lib/rabbitmq
+        # volumes:
+        #    - ./docker/runtime/data:/var/lib/rabbitmq
+        #    - ./docker/runtime/dataLogs:/var/log/rabbitmq
+        ports:
+            - 4369:4369
+            - 5672:5672
+            - 15672:15672
+            - 25672:25672
+            - 35197:35197
+#    ninja-backend:
+#        build:
+#            .
+#        container_name: ninja-backend
+#        hostname: ninja-backend.dev
+#        restart: always
+#        networks:
+#            - ninja
+#        links:
+#            - postgres-ninja
+#            - rabbit-mq-ninja
+#        depends_on:
+#            - postgres-ninja
+#            - rabbit-mq-ninja
+#        environment:
+#            DEVELOPMENT_SERVER: 'true'
+#            SERVER_PORT: 3129
+#            SOCKET_PORT: 9015
+#            JWT_SECRET_KEY: '1qazXSW@3edcVFR'
+#            DATABASE_URL: postgres://ninja_chat:12345678@postgres-ninja:5432/ninja_chat
+#            AMQP_URI: amqp://radmin:123456@rabbit-mq-ninja:5672/
+#            POSTGRES_USER: ninja_chat
+#            POSTGRES_PASSWORD: 12345678
+#            POSTGRES_DB: ninja_chat
+#            RABBITMQ_DEFAULT_USER: radmin
+#            RABBITMQ_DEFAULT_PASS: 123456
+#            RABBITMQ_DEFAULT_VHOST: rabbitMq
+#            RABBITMQ_ERLANG_COOKIE: 'SWQOKODSQACRPCLNMEQG'
+#        # volumes:
+#        #    - ./docker/runtime/data:/var/lib/rabbitmq
+#        #    - ./docker/runtime/dataLogs:/var/log/rabbitmq
+#        ports:
+#            - 3129:3129
+#            - 9015:9015
+
+networks:
+    ninja:
+        driver: bridge
